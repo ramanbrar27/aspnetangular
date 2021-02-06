@@ -7,6 +7,7 @@ using API.Entities;
 using API.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 namespace API.Controllers
 {
@@ -37,12 +38,13 @@ namespace API.Controllers
                 await _context.SaveChangesAsync();
                 return new UserDto{
                     Username=user.UserName,
-                    Token=_itokenservice.CreateToken(user)
+                    Token=_itokenservice.CreateToken(user)                   
                 };
         }
         [HttpPost("login")]
         public async Task<ActionResult<UserDto>> Login(LoginDTO loginDTO){
             var user=await _context.Users
+            .Include(p=>p.Photos)
             .SingleOrDefaultAsync(x=>x.UserName==loginDTO.Username);
             if(user==null) return Unauthorized("Invalid username");
             using var hmac=new HMACSHA512(user.PasswordSalt);
@@ -52,7 +54,8 @@ namespace API.Controllers
             }
            return new UserDto{
                     Username=user.UserName,
-                    Token=_itokenservice.CreateToken(user)
+                    Token=_itokenservice.CreateToken(user),
+                    PhotoUrl=user.Photos.FirstOrDefault(x=>x.IsMain)?.Url
                 };
         }
         
