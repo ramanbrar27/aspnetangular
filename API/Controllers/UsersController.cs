@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using API.Extensions;
+using API.Helpers;
 
 namespace API.Controllers
 {
@@ -42,14 +43,21 @@ namespace API.Controllers
          [HttpGet]
          //[AllowAnonymous]
         // public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
-         public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
+         public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers([FromQuery]UserParams userparams)
         {
           //  return await _context.Users.ToListAsync();
           
         //   var users=await _iuserrepository.GetUsersAsync();
         //   var usersToReturn= _imapper.Map<IEnumerable<MemberDto>>(users);
         //   return Ok(usersToReturn);
-            var users=await _iuserrepository.GetMembersAsync();
+            var user=await _iuserrepository.GetUserByUsernameAsync(User.GetUsername());
+
+            userparams.CurrentUsername=user.UserName;
+            if(string.IsNullOrEmpty(userparams.Gender))
+                userparams.Gender=user.Gender=="male"?"female":"male";
+            var users=await _iuserrepository.GetMembersAsync(userparams);
+
+            Response.AddPaginationHeader(users.CurrentPage,users.PageSize,users.TotalCount,users.TotalPages);
             return Ok(users);
 
         }
