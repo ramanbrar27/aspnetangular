@@ -93,6 +93,18 @@ userparams:UserParams;
      }))
   }
 
+  addLike(username:string){
+    return this.http.post(this.baseUrl+'likes/'+username,{});
+  }
+  // getLikes(predicate:string){
+  //   return this.http.get<Partial<Member[]>>(this.baseUrl+'likes?predicate='+predicate);
+  // }
+  getLikes(predicate:string,pageNumber,pageSize){
+    let params=this.getPaginationHeaders(pageNumber,pageSize);
+    params=params.append('predicate',predicate);
+    return this.getPaginatedResult<Partial<Member[]>>(this.baseUrl+'likes',params);
+    //return this.http.get<Partial<Member[]>>(this.baseUrl+'likes?predicate='+predicate);
+  }
   private getPaginatedResult<T>(url,params) {
     const paginatedResult:PaginatedResult<T>=new PaginatedResult<T>();
     return this.http.get<T>(url, { observe: 'response', params }).pipe(
