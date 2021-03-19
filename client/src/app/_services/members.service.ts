@@ -9,6 +9,7 @@ import { PaginatedResult } from '../_models/pagination';
 import { User } from '../_models/user';
 import { UserParams } from '../_models/userParams';
 import { AccountService } from './account.service';
+import { getPaginatedResult, getPaginationHeaders } from './paginationHelper';
 //implemented jwt interceptor for authorization
 // const httpOptions={
 //   headers:new HttpHeaders({
@@ -79,14 +80,14 @@ userparams:UserParams;
     if(response){
       return of(response);
     }
-   let params=this.getPaginationHeaders(userparams.pageNumber,userparams.pageSize);
+   let params=getPaginationHeaders(userparams.pageNumber,userparams.pageSize);
    
    params=params.append('minAge',userparams.minAge.toString());
    params=params.append('maxAge',userparams.maxAge.toString());
    params=params.append('gender',userparams.gender);
    params=params.append('orderBy',userparams.orderBy);
 
-     return this.getPaginatedResult<Member[]>(this.baseUrl+'users',params)
+     return getPaginatedResult<Member[]>(this.baseUrl+'users',params,this.http)
      .pipe(map(response=>{
        this.memberCache.set(Object.values(userparams).join('-'),response);
        return response;
@@ -99,32 +100,42 @@ userparams:UserParams;
   // getLikes(predicate:string){
   //   return this.http.get<Partial<Member[]>>(this.baseUrl+'likes?predicate='+predicate);
   // }
+
+  // getLikes(predicate:string,pageNumber,pageSize){
+  //   let params=this.getPaginationHeaders(pageNumber,pageSize);
+  //   params=params.append('predicate',predicate);
+  //   return this.getPaginatedResult<Partial<Member[]>>(this.baseUrl+'likes',params);
+  //   //return this.http.get<Partial<Member[]>>(this.baseUrl+'likes?predicate='+predicate);
+  // }
+
   getLikes(predicate:string,pageNumber,pageSize){
-    let params=this.getPaginationHeaders(pageNumber,pageSize);
+    let params=getPaginationHeaders(pageNumber,pageSize);
     params=params.append('predicate',predicate);
-    return this.getPaginatedResult<Partial<Member[]>>(this.baseUrl+'likes',params);
-    //return this.http.get<Partial<Member[]>>(this.baseUrl+'likes?predicate='+predicate);
-  }
-  private getPaginatedResult<T>(url,params) {
-    const paginatedResult:PaginatedResult<T>=new PaginatedResult<T>();
-    return this.http.get<T>(url, { observe: 'response', params }).pipe(
-      map(response => {
-        paginatedResult.result = response.body;
-        if (response.headers.get('Pagination') !== null) {
-          paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
-        }
-        return paginatedResult;
-      })
-    );
+    return getPaginatedResult<Partial<Member[]>>(this.baseUrl+'likes',params,this.http);
+    
   }
 
-  private getPaginationHeaders(pageNumber:number,pageSize:number){
-    let params=new HttpParams();
+
+  // private getPaginatedResult<T>(url,params) {
+  //   const paginatedResult:PaginatedResult<T>=new PaginatedResult<T>();
+  //   return this.http.get<T>(url, { observe: 'response', params }).pipe(
+  //     map(response => {
+  //       paginatedResult.result = response.body;
+  //       if (response.headers.get('Pagination') !== null) {
+  //         paginatedResult.pagination = JSON.parse(response.headers.get('Pagination'));
+  //       }
+  //       return paginatedResult;
+  //     })
+  //   );
+  // }
+
+  // private getPaginationHeaders(pageNumber:number,pageSize:number){
+  //   let params=new HttpParams();
     
-      params=params.append('pageNumber',pageNumber.toString());
-      params=params.append('pageSize',pageSize.toString());
-    return params;
-  }
+  //     params=params.append('pageNumber',pageNumber.toString());
+  //     params=params.append('pageSize',pageSize.toString());
+  //   return params;
+  // }
   getMember(username:string){
     // return this.http.get<Member>(this.baseUrl+'user/'+username,httpOptions);
    // return this.http.get<Member>(this.baseUrl+'users/'+username);
