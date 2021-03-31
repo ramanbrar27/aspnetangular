@@ -40,6 +40,8 @@ namespace API.Controllers
         //     return _context.Users.ToList();
         // }
 
+
+        // [Authorize(Roles="Admin")]
          [HttpGet]
          //[AllowAnonymous]
         // public async Task<ActionResult<IEnumerable<AppUser>>> GetUsers()
@@ -70,6 +72,7 @@ namespace API.Controllers
         //    return await _iuserrepository.GetUserByIdAsync(id);
         // }
 
+        // [Authorize(Roles="Member")]
         [HttpGet("{username}",Name="GetUser")]
         // public async Task<ActionResult<AppUser>> GetUser(string username)
         public async Task<ActionResult<MemberDto>> GetUser(string username)

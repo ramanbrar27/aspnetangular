@@ -28,11 +28,11 @@ namespace API.Controllers
             if(LikedUser==null)return NotFound();
             if(SourceUser.UserName==username)return BadRequest("You cannot like yourself");
 
-            var userlike= await _likeRepository.GetUserLike(sourceUserId,LikedUser.ID);
+            var userlike= await _likeRepository.GetUserLike(sourceUserId,LikedUser.Id);
             if(userlike!=null)return BadRequest("You already like this user");
             userlike=new UserLike{
                 SourceUserId=sourceUserId,
-                LikedUserId=LikedUser.ID
+                LikedUserId=LikedUser.Id
             };
             SourceUser.LikedUsers.Add(userlike);
             if(await _userRepository.SaveAllAsync()) return Ok();
